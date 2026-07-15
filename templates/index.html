@@ -1,0 +1,812 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LyfTracker — Personal Journal & Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Playfair+Display:ital,wght@0,500;0,600;1,400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        /* --- DESIGN SYSTEM & VARIABLES --- */
+        :root {
+            --bg-primary: #fcfbf9;     /* Off-white canvas */
+            --bg-secondary: #f4f1eb;   /* Soft beige for cards/sections */
+            --text-primary: #1c1f22;   /* Charcoal for deep contrast readability */
+            --text-secondary: #5c6267; /* Muted gray for secondary text */
+            --accent-navy: #1b2a47;    /* Deep navy for primary actions/headers */
+            --accent-olive: #4a5d4e;   /* Olive for success states/accents */
+            --border-color: #e2ded5;   /* Soft border line */
+            
+            --font-serif: 'Playfair Display', Georgia, serif;
+            --font-sans: 'Inter', -apple-system, sans-serif;
+            
+            --radius: 6px;             /* Intentionally constrained rounded corners */
+            --transition: all 0.25s ease-in-out;
+            --container-width: 1140px;
+        }
+
+        /* --- DARK MODE OVERRIDES --- */
+        [data-theme="dark"] {
+            --bg-primary: #121416;
+            --bg-secondary: #1a1d20;
+            --text-primary: #e8e6e3;
+            --text-secondary: #a1a8b0;
+            --accent-navy: #4f73b3;
+            --accent-olive: #7c9a80;
+            --border-color: #2c3136;
+        }
+
+        /* --- RESET & BASE STYLES --- */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            font-family: var(--font-sans);
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        h1, h2, h3, h4 {
+            font-family: var(--font-serif);
+            font-weight: 500;
+            color: var(--text-primary);
+            margin-bottom: 16px;
+        }
+
+        a {
+            color: inherit;
+            text-decoration: none;
+            transition: var(--transition);
+        }
+
+        p {
+            color: var(--text-secondary);
+            margin-bottom: 16px;
+        }
+
+        img {
+            max-width: 100%;
+            height: auto;
+            border-radius: var(--radius);
+        }
+
+        /* --- LAYOUT UTILITIES --- */
+        .container {
+            width: 100%;
+            max-width: var(--container-width);
+            margin: 0 auto;
+            padding: 0 24px;
+        }
+
+        .section-padding {
+            padding: 80px 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .section-title {
+            font-size: 2.2rem;
+            margin-bottom: 40px;
+            position: relative;
+        }
+
+        .card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius);
+            padding: 24px;
+            transition: var(--transition);
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.04);
+        }
+
+        /* --- STICKY NAVIGATION --- */
+        .navbar {
+            position: sticky;
+            top: 0;
+            background: var(--bg-primary);
+            border-bottom: 1px solid var(--border-color);
+            z-index: 1000;
+            padding: 16px 0;
+        }
+
+        .nav-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-family: var(--font-serif);
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--accent-navy);
+        }
+
+        .nav-menu {
+            display: flex;
+            gap: 24px;
+            align-items: center;
+            list-style: none;
+        }
+
+        .nav-link {
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+        }
+
+        .nav-link:hover, .nav-link.active {
+            color: var(--text-primary);
+        }
+
+        .nav-link.active {
+            border-bottom: 2px solid var(--accent-navy);
+            padding-bottom: 4px;
+        }
+
+        .theme-toggle, .hamburger {
+            background: none;
+            border: none;
+            color: var(--text-primary);
+            cursor: pointer;
+            font-size: 1.1rem;
+            padding: 4px;
+        }
+
+        .hamburger {
+            display: none;
+        }
+
+        /* --- HERO SECTION --- */
+        .hero-grid {
+            display: grid;
+            grid-template-columns: 1.5fr 1fr;
+            gap: 48px;
+            align-items: start;
+        }
+
+        .hero-intro h1 {
+            font-size: 3.5rem;
+            line-height: 1.15;
+            margin-bottom: 24px;
+        }
+
+        .hero-meta {
+            font-family: var(--font-serif);
+            font-style: italic;
+            color: var(--text-secondary);
+            margin-bottom: 24px;
+        }
+
+        .status-pill-box {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-top: 24px;
+        }
+
+        .status-pill {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            padding: 8px 16px;
+            border-radius: 30px;
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .status-pill span {
+            width: 8px;
+            height: 8px;
+            background: var(--accent-olive);
+            border-radius: 50%;
+        }
+
+        .activity-feed h3 {
+            margin-bottom: 20px;
+        }
+
+        .feed-item {
+            position: relative;
+            padding-left: 24px;
+            margin-bottom: 20px;
+        }
+
+        .feed-item::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 8px;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--border-color);
+        }
+
+        .feed-item.active::before {
+            background: var(--accent-navy);
+        }
+
+        .feed-time {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            display: block;
+        }
+
+        /* --- ABOUT SECTION (2-Column) --- */
+        .about-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 64px;
+        }
+
+        .skills-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        .tag {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            padding: 4px 12px;
+            border-radius: var(--radius);
+            font-size: 0.85rem;
+        }
+
+        /* --- STATUS TIMELINE --- */
+        .timeline {
+            max-width: 700px;
+            margin: 0 auto;
+        }
+
+        .timeline-entry {
+            margin-bottom: 48px;
+            position: relative;
+        }
+
+        .timeline-date {
+            font-family: var(--font-serif);
+            font-style: italic;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        .timeline-card img {
+            margin-top: 16px;
+            width: 100%;
+            object-fit: cover;
+            max-height: 400px;
+        }
+
+        .timeline-actions {
+            display: flex;
+            gap: 24px;
+            margin-top: 16px;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        .timeline-actions span {
+            cursor: pointer;
+        }
+
+        .timeline-actions span:hover {
+            color: var(--text-primary);
+        }
+
+        /* --- GALLERY GRID --- */
+        .gallery-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 24px;
+        }
+
+        .gallery-item {
+            overflow: hidden;
+            position: relative;
+        }
+
+        .gallery-item img {
+            width: 100%;
+            height: 280px;
+            object-fit: cover;
+            transition: var(--transition);
+        }
+
+        .gallery-item:hover img {
+            transform: scale(1.02);
+        }
+
+        .gallery-caption {
+            margin-top: 12px;
+            font-size: 0.9rem;
+        }
+
+        /* --- FAVORITES --- */
+        .favorites-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 24px;
+        }
+
+        .fav-card i {
+            font-size: 1.5rem;
+            color: var(--accent-navy);
+            margin-bottom: 16px;
+        }
+
+        .fav-title {
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .fav-meta {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        /* --- COLLEGE CORNER --- */
+        .college-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 32px;
+        }
+
+        .college-block {
+            margin-bottom: 32px;
+        }
+
+        .table-wrapper {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 12px;
+            font-size: 0.9rem;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        th {
+            font-weight: 600;
+            background-color: var(--bg-secondary);
+        }
+
+        .gossip-board {
+            background: #fffdf9;
+            border: 1px dashed var(--border-color);
+            padding: 20px;
+            border-radius: var(--radius);
+        }
+
+        [data-theme="dark"] .gossip-board {
+            background: #17191b;
+        }
+
+        .gossip-post {
+            border-bottom: 1px solid var(--border-color);
+            padding: 12px 0;
+            font-size: 0.9rem;
+        }
+
+        .gossip-post:last-child {
+            border-bottom: none;
+        }
+
+        /* --- GUESTBOOK & CONTACT --- */
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        label {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: 500;
+            margin-bottom: 6px;
+        }
+
+        input, textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            border-radius: var(--radius);
+            font-family: var(--font-sans);
+            font-size: 0.9rem;
+        }
+
+        input:focus, textarea:focus {
+            outline: none;
+            border-color: var(--accent-navy);
+        }
+
+        button {
+            background: var(--accent-navy);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: var(--radius);
+            font-weight: 500;
+            cursor: pointer;
+            font-family: var(--font-sans);
+            transition: var(--transition);
+        }
+
+        button:hover {
+            opacity: 0.9;
+        }
+
+        .contact-links {
+            display: flex;
+            gap: 24px;
+            font-size: 1.5rem;
+            margin-top: 24px;
+        }
+
+        .contact-links a:hover {
+            color: var(--accent-navy);
+        }
+
+        footer {
+            text-align: center;
+            padding: 40px 0;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            border-top: 1px solid var(--border-color);
+        }
+
+        /* --- RESPONSIVE RESPONSIVENESS (MOBILE) --- */
+        @media (max-width: 900px) {
+            .hero-grid, .about-grid, .college-grid {
+                grid-template-columns: 1fr;
+                gap: 40px;
+            }
+        }
+        .like-btn {
+            cursor: pointer;
+            transition: color 0.25s ease, transform 0.2s ease;
+        }
+        
+        .like-btn.liked {
+            color: #e63946;
+        }
+        
+        .like-btn:active {
+            transform: scale(1.2);
+        }
+
+        @media (max-width: 768px) {
+            .hamburger {
+                display: block;
+            }
+
+            .nav-menu {
+                display: none;
+                position: absolute;
+                top: 60px;
+                left: 0;
+                width: 100%;
+                background: var(--bg-primary);
+                flex-direction: column;
+                padding: 24px;
+                border-bottom: 1px solid var(--border-color);
+                gap: 16px;
+            }
+
+            .nav-menu.open {
+                display: flex;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar">
+        <div class="container nav-container">
+            <a href="#" class="logo">LyfTracker.</a>
+            <ul class="nav-menu" id="navMenu">
+                <li><a href="#home" class="nav-link active">Home</a></li>
+                <li><a href="#about" class="nav-link">About</a></li>
+                <li><a href="#timeline" class="nav-link">Journal</a></li>
+                <li><a href="#gallery" class="nav-link">Gallery</a></li>
+                <li><a href="#favorites" class="nav-link">Favorites</a></li>
+                <li><a href="#college" class="nav-link">College</a></li>
+                <li><a href="#guestbook" class="nav-link">Guestbook</a></li>
+                <li><a href="#contact" class="nav-link">Contact</a></li>
+                <li><button class="theme-toggle" id="themeToggle" aria-label="Toggle Dark Mode"><i class="fa-regular fa-moon"></i></button></li>
+            </ul>
+            <button class="hamburger" id="menuToggle" aria-label="Toggle Menu">
+                <i class="fa-solid fa-bars"></i>
+            </button>
+        </div>
+    </nav>
+
+    <header id="home" class="container section-padding">
+        <div class="hero-grid">
+            <div class="hero-intro">
+                
+                <h1>Hi, I'm Divyanshu. Designing spaces for quiet digital living.</h1>
+                <p>I am a developer and student crafting structured web environments. Welcome to my personal dashboard—an intentional logbook of my daily rhythms, coursework, and side endeavors.</p>
+                
+                <div class="status-pill-box">
+                    <div class="status-pill"><span></span>Status: {{status.activity}}</div>
+                    <div class="status-pill"><span></span>Song: {{status.music}}</div>
+                    <div class="status-pill"><span></span> Mood: {{status.mood}} </div>
+                </div>
+            </div>
+            
+            <div class="activity-feed card">
+                <h3>Recent Activity</h3>
+                <div class="feed-item active">
+                    <span class="feed-time">{{Recent_Act.time}}</span>
+                    <p>{{Recent_Act.Work}}</p>
+                </div>
+               
+            </div>
+        </div>
+    </header>
+
+    <section id="about" class="container section-padding">
+        <h2 class="section-title">The Blueprint</h2>
+        <div class="about-grid">
+            <div>
+                <h3>Biography</h3>
+                <p>Welcome to my little corner of the internet.
+
+                  I'm a BCA student from India with a passion for technology, creativity, and continuous learning. Most of my time is spent building websites, experimenting with new programming concepts, and turning ideas into real projects. I enjoy the process of creating something from scratch and solving problems one step at a time.
+                  
+                  Beyond coding, I love discovering new music, playing games, exploring new technologies, and documenting the things that inspire me. This website is more than just a portfolio—it's a personal journal where I share what I'm currently working on, what I'm listening to, the projects I'm building, moments from college, and the experiences that shape my journey.
+                  
+                  Whether you're here to browse my projects, leave a message, or simply see what I'm up to, I hope you enjoy your visit.
+                  
+                  Thanks for stopping by!</p>
+               
+            </div>
+            <div>
+                <h3>Education & Skills</h3>
+                <p><strong>Bachelor of Computer Applications</strong><br><small class="text-secondary">L.N.Mishra — Pursuing Graduation</small></p>
+                <p>Working remotely as a Social Media Moderator for Rush Royale Facebook and Instagram, My.Games.</p>
+                <h4 style="margin-top:24px;">Core Competencies</h4>
+                <div class="skills-tags">
+                    <span class="tag">JavaScript (ES6)</span>
+                    <span class="tag">Node.js</span>
+                    <span class="tag">Java SE</span>
+                    <span class="tag">HTML5 & XML</span>
+                    <span class="tag">Python/Django</span>
+                </div>
+                
+                <h4 style="margin-top:24px;">Current Milestones</h4>
+                <p>Developing an optimized parsing algorithm for custom text rendering pipelines and expanding automation setups.</p>
+            </div>
+        </div>
+    </section>
+
+    <section id="timeline" class="container section-padding">
+        <h2 class="section-title">Journal Entries</h2>
+        <div class="timeline">
+            {% for post in posts %}
+
+            <div class="timeline-entry">
+                <span class="timeline-date">{{post.date}}</span>
+                <div class="card timeline-card">
+                    <p>{{post.caption}}</p>
+                    <img src="{{post.image.url}}" alt="">
+                   
+                    <div class="timeline-actions">
+                        <span class="like-btn">
+                            <i class="fa-regular fa-heart"></i>
+                        </span>
+                        
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+         
+            
+        </div>
+    </section>
+
+    <section id="gallery" class="container section-padding">
+        <h2 class="section-title">Visual Log</h2>
+        <div class="gallery-grid">
+            <div class="gallery-item">
+                <img src="https://images.unsplash.com/photo-1516962215378-7fa2e137ae93?auto=format&fit=crop&w=500&q=80" alt="Minimal journal">
+                <div class="gallery-caption">Notebook essentials, midtest preparation.</div>
+            </div>
+            <div class="gallery-item">
+                <img src="https://images.unsplash.com/photo-1506784983877-45594efa4cbe?auto=format&fit=crop&w=500&q=80" alt="Workspace desk layout">
+                <div class="gallery-caption">Desk architecture at dusk. Minimal light setups.</div>
+            </div>
+            <div class="gallery-item">
+                <img src="https://images.unsplash.com/photo-1457369804613-52c61a468e7d?auto=format&fit=crop&w=500&q=80" alt="Stack of historic paperbacks">
+                <div class="gallery-caption">Reference readings for operating systems logic modules.</div>
+            </div>
+        </div>
+    </section>
+
+    <section id="favorites" class="container section-padding">
+        <h2 class="section-title">Curated Favorites</h2>
+        <div class="favorites-grid">
+            <div class="card fav-card">
+                <i class="fa-solid fa-book"></i>
+                <div class="fav-title">Gödel, Escher, Bach</div>
+                <div class="fav-meta">Douglas Hofstadter — Book</div>
+            </div>
+            <div class="card fav-card">
+                <i class="fa-solid fa-music"></i>
+                <div class="fav-title">Apocalypse</div>
+                <div class="fav-meta">By Cigarettes After Sex</div>
+            </div>
+            <div class="card fav-card">
+                <i class="fa-solid fa-film"></i>
+                <div class="fav-title">The Dark Knight</div>
+                <div class="fav-meta">Christopher Nolan — Movie</div>
+            </div>
+            <div class="card fav-card">
+                <i class="fa-solid fa-compass"></i>
+                <div class="fav-title">Typography & Layouts</div>
+                <div class="fav-meta">Print & Editorial — Hobby</div>
+            </div>
+        </div>
+    </section>
+
+    <section id="college" class="container section-padding">
+        <h2 class="section-title">College Corner</h2>
+        <div class="college-grid">
+            <div>
+                <div class="college-block">
+                    <h3>Timetable & Core Lectures</h3>
+                    <div class="table-wrapper">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Day</th>
+                                    <th>Time</th>
+                                    <th>Subject</th>
+                                    <th>Attendance</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for lecture in timetable %}
+                                <tr>
+                                    <td>{{lecture.day}}</td>
+                                    <td>{{lecture.time}}</td>
+                                    <td>{{lecture.subject}}</td>
+                                    <td><span style="color:var(--accent-olive)">{{lecture.attendance}}%</span></td>
+                                </tr>
+                                {% endfor %} 
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+            
+            </div>
+
+            <aside>
+                <h3>Gossip Board</h3>
+                <div class="gossip-board">
+                    {% for gossip in socials %}
+                    <div class="gossip-post">
+                        <p>{{gossip.text}}</p>
+                        <small class="text-secondary">{{gossip.user}}</small>
+                    </div>
+                    {% endfor %}
+                </div>
+            </aside>
+        </div>
+    </section>
+
+    <section id="guestbook" class="container section-padding">
+        <h2 class="section-title">Sign the Guestbook</h2>
+        <div style="max-width: 600px; margin: 0 auto;">
+            <form id="guestbookForm" class="card" method = "POST">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="visitorName">Your Name</label>
+                    <input type="text" id="visitorName" name = "name" placeholder="E.g., Jane Doe" required>
+                </div>
+                <div class="form-group">
+                    <label for="visitorMessage">Message</label>
+                    <textarea id="visitorMessage" name = "messages" rows="4" placeholder="Leave a kind mark..." required></textarea>
+                </div>
+                <button type="submit">Leave Entry</button>
+            </form>
+        </div>
+    </section>
+
+    <section id="contact" class="container section-padding" style="border-bottom:none; text-align:center;">
+        <h2 class="section-title">Get in Touch</h2>
+        <p>Feel free to reach out for research collaboration, open-source projects, or typographic discussions.</p>
+        <div class="contact-links" style="justify-content: center;">
+            <a href="https://github.com/Havemore-Anand"><i class="fa-brands fa-github"></i></a>
+            <a href="https://www.linkedin.com/in/divyanshu-anand-a47270356?utm_source=share_via&utm_content=profile&utm_medium=member_android"><i class="fa-brands fa-linkedin-in"></i></a>
+            <a href="mailto:dangerousanand018@gmail.com"><i class="fa-regular fa-envelope"></i></a>
+        </div>
+    </section>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2026 LyfTracker. Developed by Divyanshu.</p>
+        </div>
+    </footer>
+
+    <script>
+        // DOM Elements
+        const themeToggle = document.getElementById('themeToggle');
+        const menuToggle = document.getElementById('menuToggle');
+        const navMenu = document.getElementById('navMenu');
+        const navLinks = document.querySelectorAll('.nav-link');
+
+        // Light/Dark Theme Switcher Logic
+        themeToggle.addEventListener('click', () => {
+            const currentTheme = document.documentElement.getAttribute('data-theme');
+            if (currentTheme === 'dark') {
+                document.documentElement.removeAttribute('data-theme');
+                themeToggle.innerHTML = '<i class="fa-regular fa-moon"></i>';
+            } else {
+                document.documentElement.setAttribute('data-theme', 'dark');
+                themeToggle.innerHTML = '<i class="fa-regular fa-sun"></i>';
+            }
+        });
+
+        // Hamburger Menu Toggle Logic
+        menuToggle.addEventListener('click', () => {
+            navMenu.classList.toggle('open');
+            const isOpen = navMenu.classList.contains('open');
+            menuToggle.innerHTML = isOpen ? '<i class="fa-solid fa-xmark"></i>' : '<i class="fa-solid fa-bars"></i>';
+        });
+
+        // Close Mobile Menu on Nav Item Click
+        navLinks.forEach(link => {
+            link.addEventListener('click', () => {
+                navMenu.classList.remove('open');
+                menuToggle.innerHTML = '<i class="fa-solid fa-bars"></i>';
+                
+                // Active Class Management
+                navLinks.forEach(item => item.classList.remove('active'));
+                link.classList.add('active');
+            });
+        });
+   
+    
+        const params = new URLSearchParams(window.location.search);
+    
+        if (params.get("success") === "1") {
+            alert("🎉 Thank you! Your message has been submitted successfully.");
+        } 
+        const likeButtons = document.querySelectorAll(".like-btn");
+
+        likeButtons.forEach(button => {
+            button.addEventListener("click", () => {
+                button.classList.toggle("liked");
+            });
+        });
+    
+    
+    </script>
+    </body>
+</html>
